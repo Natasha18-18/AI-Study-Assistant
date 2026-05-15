@@ -5,17 +5,19 @@ import axios from "axios";
 import {
   User,
   Shield,
-  Settings as SettingsIcon,
   Upload,
   Camera,
   Lock,
   Mail,
   Sparkles,
   CheckCircle2,
+  Crown,
+  Zap,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 const Settings = () => {
-
   const storedUser = JSON.parse(
     localStorage.getItem("user") || "{}"
   );
@@ -48,6 +50,18 @@ const Settings = () => {
   const [confirmPassword, setConfirmPassword] =
     useState("");
 
+  const [showCurrent, setShowCurrent] =
+    useState(false);
+
+  const [showNew, setShowNew] =
+    useState(false);
+
+  const [showConfirm, setShowConfirm] =
+    useState(false);
+
+  const [loading, setLoading] =
+    useState(false);
+
   const token = localStorage.getItem("token");
 
   // =========================
@@ -65,52 +79,64 @@ const Settings = () => {
   // =========================
   // UPDATE PROFILE
   // =========================
-const handleProfileUpdate = async () => {
-  try {
-    const formData = new FormData();
+  const handleProfileUpdate = async () => {
+    try {
+      setLoading(true);
 
-    formData.append("name", name);
-    formData.append("email", email);
+      const formData = new FormData();
 
-    if (profilePic instanceof File) {
-      formData.append("profilePic", profilePic);
-    }
+      formData.append("name", name);
+      formData.append("email", email);
 
-    const res = await axios.put(
-      "http://localhost:5000/api/user/update",
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      if (profilePic instanceof File) {
+        formData.append(
+          "profilePic",
+          profilePic
+        );
       }
-    );
 
-    const updatedUser = {
-      ...storedUser,
-      ...res.data.user,
-    };
+      const res = await axios.put(
+        "http://localhost:5000/api/user/update",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    const imageUrl = updatedUser.profilePic
-      ? `http://localhost:5000${updatedUser.profilePic}`
-      : "https://i.pravatar.cc/150";
+      const updatedUser = {
+        ...storedUser,
+        ...res.data.user,
+      };
 
-    // ✅ SAVE ONLY ONCE
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-    localStorage.setItem("profilePic", imageUrl);
+      const imageUrl = updatedUser.profilePic
+        ? `http://localhost:5000${updatedUser.profilePic}`
+        : "https://i.pravatar.cc/150";
 
-    // ✅ update UI instantly
-    setPreview(imageUrl);
-    setName(updatedUser.name);
-    setEmail(updatedUser.email);
+      localStorage.setItem(
+        "user",
+        JSON.stringify(updatedUser)
+      );
 
-    alert("Profile updated ✅");
+      localStorage.setItem(
+        "profilePic",
+        imageUrl
+      );
 
-  } catch (err) {
-    console.log(err);
-    alert("Error updating profile");
-  }
-};
+      setPreview(imageUrl);
+      setName(updatedUser.name);
+      setEmail(updatedUser.email);
+
+      alert("Profile updated successfully ✅");
+
+    } catch (err) {
+      console.log(err);
+      alert("Error updating profile");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // =========================
   // PASSWORD
@@ -142,6 +168,8 @@ const handleProfileUpdate = async () => {
         );
       }
 
+      setLoading(true);
+
       await axios.put(
         "http://localhost:5000/api/user/change-password",
         {
@@ -164,17 +192,208 @@ const handleProfileUpdate = async () => {
     } catch (err) {
       console.log(err);
       alert("Error changing password");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#070b16] via-[#0f172a] to-black text-white px-4 md:px-8 py-8">
+    <div
+      className="
+        min-h-screen
+        relative
+        overflow-hidden
+        bg-[#050816]
+        text-white
+        px-4 md:px-8
+        py-8
+      "
+    >
 
-      <div className="max-w-6xl mx-auto space-y-8">
+      {/* GRID */}
+      <div
+        className="
+          absolute inset-0
+          bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)]
+          bg-[size:40px_40px]
+        "
+      />
 
+      {/* GLOWS */}
+      <div
+        className="
+          absolute
+          top-[-120px]
+          left-[-120px]
+          w-[350px]
+          h-[350px]
+          bg-cyan-500/20
+          blur-[120px]
+          rounded-full
+        "
+      />
 
-        {/* ================= TABS ================= */}
-        <div className="flex gap-4 flex-wrap">
+      <div
+        className="
+          absolute
+          bottom-[-120px]
+          right-[-120px]
+          w-[350px]
+          h-[350px]
+          bg-blue-500/20
+          blur-[120px]
+          rounded-full
+        "
+      />
+
+      <div className="relative z-10 max-w-7xl mx-auto">
+
+        {/* HEADER */}
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 40,
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+          className="
+            relative overflow-hidden
+            rounded-[38px]
+            border border-cyan-400/10
+            bg-white/[0.05]
+            backdrop-blur-3xl
+            p-7 md:p-10
+            shadow-[0_0_60px_rgba(0,0,0,0.45)]
+          "
+        >
+
+          <div
+            className="
+              absolute
+              top-0
+              right-0
+              w-80
+              h-80
+              bg-cyan-500/20
+              blur-[120px]
+              rounded-full
+            "
+          />
+
+          <div
+            className="
+              relative z-10
+              flex flex-col lg:flex-row
+              lg:items-center
+              lg:justify-between
+              gap-8
+            "
+          >
+
+            <div className="flex items-center gap-5">
+
+              <div
+                className="
+                  w-20 h-20
+                  rounded-[28px]
+                  bg-gradient-to-r
+                  from-cyan-500
+                  to-blue-600
+                  flex items-center justify-center
+                  shadow-[0_0_35px_rgba(59,130,246,0.45)]
+                "
+              >
+                <Sparkles size={34} />
+              </div>
+
+              <div>
+
+                {/* <div
+                  className="
+                    inline-flex items-center gap-2
+                    px-4 py-1.5
+                    rounded-full
+                    border border-cyan-400/20
+                    bg-cyan-400/10
+                    text-cyan-300
+                    text-xs
+                    font-semibold
+                    mb-4
+                  "
+                >
+                  <Crown size={14} />
+                  PREMIUM SETTINGS
+                </div> */}
+
+                <h1
+                  className="
+                    text-4xl md:text-5xl
+                    font-black
+                    bg-gradient-to-r
+                    from-cyan-300
+                    via-blue-400
+                    to-white
+                    text-transparent
+                    bg-clip-text
+                  "
+                >
+                  Account Settings
+                </h1>
+
+                <p className="text-white/55 mt-3">
+                  Manage your profile, security &
+                  personalization experience.
+                </p>
+
+              </div>
+
+            </div>
+
+            {/* QUICK STATUS */}
+            <div
+              className="
+                flex items-center gap-4
+                px-5 py-4
+                rounded-3xl
+                border border-emerald-400/15
+                bg-emerald-500/10
+                backdrop-blur-xl
+              "
+            >
+
+              <div
+                className="
+                  w-14 h-14
+                  rounded-2xl
+                  bg-gradient-to-r
+                  from-emerald-500
+                  to-green-500
+                  flex items-center justify-center
+                "
+              >
+                <CheckCircle2 size={26} />
+              </div>
+
+              <div>
+                <p className="text-sm text-white/50">
+                  Account Status
+                </p>
+
+                <h3 className="font-bold text-lg text-emerald-300">
+                  Fully Secured
+                </h3>
+              </div>
+
+            </div>
+
+          </div>
+
+        </motion.div>
+
+        {/* TABS */}
+        <div className="flex gap-4 mt-8 flex-wrap">
 
           {[
             {
@@ -197,29 +416,50 @@ const handleProfileUpdate = async () => {
                 onClick={() =>
                   setActiveTab(tab.id)
                 }
-                className={`flex items-center gap-3 px-6 py-3 rounded-2xl transition-all duration-300 border
-                ${
-                  activeTab === tab.id
-                    ? "bg-gradient-to-r from-purple-600 to-pink-500 border-transparent shadow-xl scale-105"
-                    : "bg-white/5 border-white/10 hover:bg-white/10"
-                }`}
+                className={`
+                  group
+                  flex items-center gap-3
+                  px-7 py-4
+                  rounded-2xl
+                  border
+                  transition-all duration-300
+                  ${
+                    activeTab === tab.id
+                      ? `
+                        bg-gradient-to-r
+                        from-cyan-500
+                        to-blue-600
+                        border-transparent
+                        shadow-[0_0_35px_rgba(59,130,246,0.35)]
+                        scale-105
+                      `
+                      : `
+                        bg-white/[0.05]
+                        border-white/10
+                        hover:bg-white/[0.08]
+                      `
+                  }
+                `}
               >
-                <Icon size={18} />
-                <span className="font-medium">
+
+                <Icon size={20} />
+
+                <span className="font-semibold">
                   {tab.label}
                 </span>
+
               </button>
             );
           })}
 
         </div>
 
-        {/* ================= CONTENT ================= */}
+        {/* CONTENT */}
         <motion.div
           key={activeTab}
           initial={{
             opacity: 0,
-            y: 20,
+            y: 30,
           }}
           animate={{
             opacity: 1,
@@ -228,63 +468,162 @@ const handleProfileUpdate = async () => {
           transition={{
             duration: 0.3,
           }}
+          className="mt-8"
         >
 
-          {/* ================= PROFILE ================= */}
+          {/* PROFILE */}
           {activeTab === "profile" && (
-            <div className="bg-white/5 border border-white/10 backdrop-blur-2xl rounded-[35px] p-8 shadow-[0_0_40px_rgba(0,0,0,0.3)]">
 
-              <div className="flex items-center gap-4 mb-8">
+            <div
+              className="
+                relative overflow-hidden
+                rounded-[36px]
+                border border-cyan-400/10
+                bg-white/[0.05]
+                backdrop-blur-3xl
+                p-8 md:p-10
+                shadow-[0_0_60px_rgba(0,0,0,0.35)]
+              "
+            >
 
-                <div className="w-16 h-16 rounded-3xl bg-gradient-to-r from-purple-600 to-pink-500 flex items-center justify-center">
-                  <User size={28} />
-                </div>
+              {/* GLOW */}
+              <div
+                className="
+                  absolute
+                  top-[-100px]
+                  right-[-100px]
+                  w-[280px]
+                  h-[280px]
+                  bg-blue-500/20
+                  blur-[120px]
+                  rounded-full
+                "
+              />
 
-                <div>
-                  <h2 className="text-3xl font-bold">
-                    Profile Information
-                  </h2>
+              <div className="relative z-10">
 
-                  <p className="text-white/50 mt-1">
-                    Update your personal
-                    details & profile image
-                  </p>
-                </div>
+                {/* TOP */}
+                <div
+                  className="
+                    flex flex-col lg:flex-row
+                    lg:items-center
+                    lg:justify-between
+                    gap-8
+                    mb-10
+                  "
+                >
 
-              </div>
+                  <div className="flex items-center gap-6">
 
-              {/* PROFILE IMAGE */}
-              <div className="flex flex-col md:flex-row md:items-center gap-6 mb-10">
+                    {/* IMAGE */}
+                    <div className="relative">
 
-                <div className="relative w-fit">
+                      <div
+                        className="
+                          absolute inset-0
+                          rounded-full
+                          bg-gradient-to-r
+                          from-cyan-500
+                          to-blue-600
+                          blur-xl
+                          opacity-60
+                        "
+                      />
 
-                  <img
-                    src={preview}
-                    alt="profile"
-                    className="w-28 h-28 rounded-full object-cover border-4 border-purple-500 shadow-2xl"
-                  />
+                      <img
+                        src={preview}
+                        alt="profile"
+                        className="
+                          relative
+                          w-32 h-32
+                          rounded-full
+                          object-cover
+                          border-[5px]
+                          border-white/20
+                          shadow-2xl
+                        "
+                      />
 
-                  <div className="absolute bottom-1 right-1 w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 flex items-center justify-center border-4 border-[#0f172a]">
-                    <Camera size={16} />
+                      <label
+                        className="
+                          absolute
+                          bottom-2
+                          right-2
+                          w-11 h-11
+                          rounded-full
+                          bg-gradient-to-r
+                          from-cyan-500
+                          to-blue-600
+                          flex items-center justify-center
+                          cursor-pointer
+                          border-4 border-[#050816]
+                          shadow-xl
+                        "
+                      >
+
+                        <Camera size={16} />
+
+                        <input
+                          type="file"
+                          onChange={
+                            handleImageChange
+                          }
+                          className="hidden"
+                        />
+
+                      </label>
+
+                    </div>
+
+                    {/* INFO */}
+                    <div>
+
+                      <h2 className="text-3xl font-bold">
+                        {name || "Your Name"}
+                      </h2>
+
+                      <p className="text-white/50 mt-2">
+                        {email || "Your Email"}
+                      </p>
+
+                      {/* <div
+                        className="
+                          mt-5
+                          inline-flex items-center gap-2
+                          px-4 py-2
+                          rounded-full
+                          bg-cyan-500/10
+                          border border-cyan-500/20
+                          text-cyan-300
+                          text-sm
+                        "
+                      >
+                        <Zap size={15} />
+                        AI Study Premium User
+                      </div> */}
+
+                    </div>
+
                   </div>
 
-                </div>
-
-                <div>
-
-                  <h3 className="text-xl font-semibold">
-                    {name || "Your Name"}
-                  </h3>
-
-                  <p className="text-white/50 mt-1">
-                    {email || "Your Email"}
-                  </p>
-
-                  <label className="mt-5 inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 cursor-pointer transition-all">
+                  {/* UPLOAD BUTTON */}
+                  <label
+                    className="
+                      inline-flex
+                      items-center gap-3
+                      px-6 py-4
+                      rounded-2xl
+                      bg-white/[0.06]
+                      border border-white/10
+                      hover:bg-white/[0.09]
+                      cursor-pointer
+                      transition-all
+                    "
+                  >
 
                     <Upload size={18} />
 
-                    <span className="font-medium">
+                    <span className="font-semibold">
                       Upload New Photo
                     </span>
 
@@ -300,216 +639,435 @@ const handleProfileUpdate = async () => {
 
                 </div>
 
-              </div>
+                {/* INPUTS */}
+                <div className="grid md:grid-cols-2 gap-7">
 
-              {/* INPUTS */}
-              <div className="grid md:grid-cols-2 gap-6">
+                  {/* NAME */}
+                  <div>
 
-                {/* NAME */}
-                <div>
+                    <label className="text-white/60 text-sm mb-3 block">
+                      Full Name
+                    </label>
 
-                  <label className="text-sm text-white/60 mb-2 block">
-                    Full Name
-                  </label>
+                    <div
+                      className="
+                        flex items-center gap-3
+                        px-5 py-4
+                        rounded-2xl
+                        bg-black/20
+                        border border-white/10
+                        focus-within:border-cyan-400/40
+                        focus-within:shadow-[0_0_20px_rgba(34,211,238,0.2)]
+                        transition-all
+                      "
+                    >
 
-                  <div className="flex items-center gap-3 px-4 py-4 rounded-2xl bg-black/20 border border-white/10 focus-within:border-purple-500 transition">
+                      <User
+                        size={18}
+                        className="text-cyan-300"
+                      />
 
-                    <User
-                      size={18}
-                      className="text-white/40"
-                    />
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) =>
+                          setName(
+                            e.target.value
+                          )
+                        }
+                        placeholder="Enter your name"
+                        className="
+                          bg-transparent
+                          w-full
+                          outline-none
+                          placeholder:text-white/30
+                        "
+                      />
 
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(e) =>
-                        setName(
-                          e.target.value
-                        )
-                      }
-                      placeholder="Enter your name"
-                      className="bg-transparent w-full outline-none"
-                    />
+                    </div>
+
+                  </div>
+
+                  {/* EMAIL */}
+                  <div>
+
+                    <label className="text-white/60 text-sm mb-3 block">
+                      Email Address
+                    </label>
+
+                    <div
+                      className="
+                        flex items-center gap-3
+                        px-5 py-4
+                        rounded-2xl
+                        bg-black/20
+                        border border-white/10
+                        focus-within:border-cyan-400/40
+                        focus-within:shadow-[0_0_20px_rgba(34,211,238,0.2)]
+                        transition-all
+                      "
+                    >
+
+                      <Mail
+                        size={18}
+                        className="text-cyan-300"
+                      />
+
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) =>
+                          setEmail(
+                            e.target.value
+                          )
+                        }
+                        placeholder="Enter your email"
+                        className="
+                          bg-transparent
+                          w-full
+                          outline-none
+                          placeholder:text-white/30
+                        "
+                      />
+
+                    </div>
 
                   </div>
 
                 </div>
 
-                {/* EMAIL */}
-                <div>
+                {/* BUTTON */}
+                <button
+                  onClick={
+                    handleProfileUpdate
+                  }
+                  disabled={loading}
+                  className="
+                    mt-10
+                    bg-gradient-to-r
+                    from-cyan-500
+                    to-blue-600
+                    px-8 py-4
+                    rounded-2xl
+                    font-bold
+                    hover:scale-105
+                    transition-all duration-300
+                    shadow-[0_0_35px_rgba(59,130,246,0.35)]
+                    disabled:opacity-60
+                    flex items-center gap-3
+                  "
+                >
 
-                  <label className="text-sm text-white/60 mb-2 block">
-                    Email Address
-                  </label>
+                  {loading ? (
+                    "Saving..."
+                  ) : (
+                    <>
+                      <CheckCircle2 size={20} />
+                      Save Profile Changes
+                    </>
+                  )}
 
-                  <div className="flex items-center gap-3 px-4 py-4 rounded-2xl bg-black/20 border border-white/10 focus-within:border-purple-500 transition">
-
-                    <Mail
-                      size={18}
-                      className="text-white/40"
-                    />
-
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) =>
-                        setEmail(
-                          e.target.value
-                        )
-                      }
-                      placeholder="Enter your email"
-                      className="bg-transparent w-full outline-none"
-                    />
-
-                  </div>
-
-                </div>
+                </button>
 
               </div>
-
-              {/* BUTTON */}
-              <button
-                onClick={
-                  handleProfileUpdate
-                }
-                className="mt-8 bg-gradient-to-r from-purple-600 to-pink-500 px-8 py-4 rounded-2xl font-semibold hover:scale-105 transition-all shadow-2xl"
-              >
-                Save Profile Changes
-              </button>
 
             </div>
           )}
 
-          {/* ================= SECURITY ================= */}
+          {/* SECURITY */}
           {activeTab === "security" && (
-            <div className="bg-white/5 border border-white/10 backdrop-blur-2xl rounded-[35px] p-8 shadow-[0_0_40px_rgba(0,0,0,0.3)]">
 
-              <div className="flex items-center gap-4 mb-8">
+            <div
+              className="
+                relative overflow-hidden
+                rounded-[36px]
+                border border-cyan-400/10
+                bg-white/[0.05]
+                backdrop-blur-3xl
+                p-8 md:p-10
+                shadow-[0_0_60px_rgba(0,0,0,0.35)]
+              "
+            >
 
-                <div className="w-16 h-16 rounded-3xl bg-gradient-to-r from-blue-600 to-cyan-500 flex items-center justify-center">
-                  <Shield size={28} />
+              <div
+                className="
+                  absolute
+                  bottom-[-100px]
+                  left-[-100px]
+                  w-[280px]
+                  h-[280px]
+                  bg-cyan-500/20
+                  blur-[120px]
+                  rounded-full
+                "
+              />
+
+              <div className="relative z-10">
+
+                {/* HEADER */}
+                <div className="flex items-center gap-5 mb-10">
+
+                  <div
+                    className="
+                      w-20 h-20
+                      rounded-[28px]
+                      bg-gradient-to-r
+                      from-cyan-500
+                      to-blue-600
+                      flex items-center justify-center
+                      shadow-[0_0_35px_rgba(59,130,246,0.35)]
+                    "
+                  >
+                    <Shield size={34} />
+                  </div>
+
+                  <div>
+
+                    <h2 className="text-4xl font-black">
+                      Security Center
+                    </h2>
+
+                    <p className="text-white/50 mt-2">
+                      Protect your account with
+                      strong credentials 🔐
+                    </p>
+
+                  </div>
+
                 </div>
 
-                <div>
-                  <h2 className="text-3xl font-bold">
-                    Security Settings
-                  </h2>
+                <div className="space-y-7">
 
-                  <p className="text-white/50 mt-1">
-                    Change your password &
-                    secure your account 🔐
-                  </p>
+                  {/* CURRENT */}
+                  <div>
+
+                    <label className="text-white/60 text-sm mb-3 block">
+                      Current Password
+                    </label>
+
+                    <div
+                      className="
+                        flex items-center gap-3
+                        px-5 py-4
+                        rounded-2xl
+                        bg-black/20
+                        border border-white/10
+                        focus-within:border-cyan-400/40
+                        transition-all
+                      "
+                    >
+
+                      <Lock
+                        size={18}
+                        className="text-cyan-300"
+                      />
+
+                      <input
+                        type={
+                          showCurrent
+                            ? "text"
+                            : "password"
+                        }
+                        placeholder="Current password"
+                        value={
+                          currentPassword
+                        }
+                        onChange={(e) =>
+                          setCurrentPassword(
+                            e.target.value
+                          )
+                        }
+                        className="
+                          bg-transparent
+                          w-full
+                          outline-none
+                          placeholder:text-white/30
+                        "
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowCurrent(
+                            !showCurrent
+                          )
+                        }
+                      >
+
+                        {showCurrent ? (
+                          <EyeOff size={18} />
+                        ) : (
+                          <Eye size={18} />
+                        )}
+
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                  {/* NEW */}
+                  <div>
+
+                    <label className="text-white/60 text-sm mb-3 block">
+                      New Password
+                    </label>
+
+                    <div
+                      className="
+                        flex items-center gap-3
+                        px-5 py-4
+                        rounded-2xl
+                        bg-black/20
+                        border border-white/10
+                        focus-within:border-cyan-400/40
+                        transition-all
+                      "
+                    >
+
+                      <Lock
+                        size={18}
+                        className="text-cyan-300"
+                      />
+
+                      <input
+                        type={
+                          showNew
+                            ? "text"
+                            : "password"
+                        }
+                        placeholder="New password"
+                        value={newPassword}
+                        onChange={(e) =>
+                          setNewPassword(
+                            e.target.value
+                          )
+                        }
+                        className="
+                          bg-transparent
+                          w-full
+                          outline-none
+                          placeholder:text-white/30
+                        "
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowNew(!showNew)
+                        }
+                      >
+
+                        {showNew ? (
+                          <EyeOff size={18} />
+                        ) : (
+                          <Eye size={18} />
+                        )}
+
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                  {/* CONFIRM */}
+                  <div>
+
+                    <label className="text-white/60 text-sm mb-3 block">
+                      Confirm Password
+                    </label>
+
+                    <div
+                      className="
+                        flex items-center gap-3
+                        px-5 py-4
+                        rounded-2xl
+                        bg-black/20
+                        border border-white/10
+                        focus-within:border-cyan-400/40
+                        transition-all
+                      "
+                    >
+
+                      <Lock
+                        size={18}
+                        className="text-cyan-300"
+                      />
+
+                      <input
+                        type={
+                          showConfirm
+                            ? "text"
+                            : "password"
+                        }
+                        placeholder="Confirm password"
+                        value={
+                          confirmPassword
+                        }
+                        onChange={(e) =>
+                          setConfirmPassword(
+                            e.target.value
+                          )
+                        }
+                        className="
+                          bg-transparent
+                          w-full
+                          outline-none
+                          placeholder:text-white/30
+                        "
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirm(
+                            !showConfirm
+                          )
+                        }
+                      >
+
+                        {showConfirm ? (
+                          <EyeOff size={18} />
+                        ) : (
+                          <Eye size={18} />
+                        )}
+
+                      </button>
+
+                    </div>
+
+                  </div>
+
                 </div>
+
+                {/* BUTTON */}
+                <button
+                  onClick={
+                    handlePasswordChange
+                  }
+                  disabled={loading}
+                  className="
+                    mt-10
+                    bg-gradient-to-r
+                    from-cyan-500
+                    to-blue-600
+                    px-8 py-4
+                    rounded-2xl
+                    font-bold
+                    hover:scale-105
+                    transition-all duration-300
+                    shadow-[0_0_35px_rgba(59,130,246,0.35)]
+                    disabled:opacity-60
+                  "
+                >
+
+                  {loading
+                    ? "Updating..."
+                    : "Update Password"}
+
+                </button>
 
               </div>
-
-              <div className="space-y-6">
-
-                {/* CURRENT PASSWORD */}
-                <div>
-
-                  <label className="text-sm text-white/60 mb-2 block">
-                    Current Password
-                  </label>
-
-                  <div className="flex items-center gap-3 px-4 py-4 rounded-2xl bg-black/20 border border-white/10 focus-within:border-blue-500 transition">
-
-                    <Lock
-                      size={18}
-                      className="text-white/40"
-                    />
-
-                    <input
-                      type="password"
-                      placeholder="Current password"
-                      value={
-                        currentPassword
-                      }
-                      onChange={(e) =>
-                        setCurrentPassword(
-                          e.target.value
-                        )
-                      }
-                      className="bg-transparent w-full outline-none"
-                    />
-
-                  </div>
-
-                </div>
-
-                {/* NEW PASSWORD */}
-                <div>
-
-                  <label className="text-sm text-white/60 mb-2 block">
-                    New Password
-                  </label>
-
-                  <div className="flex items-center gap-3 px-4 py-4 rounded-2xl bg-black/20 border border-white/10 focus-within:border-blue-500 transition">
-
-                    <Lock
-                      size={18}
-                      className="text-white/40"
-                    />
-
-                    <input
-                      type="password"
-                      placeholder="New password"
-                      value={newPassword}
-                      onChange={(e) =>
-                        setNewPassword(
-                          e.target.value
-                        )
-                      }
-                      className="bg-transparent w-full outline-none"
-                    />
-
-                  </div>
-
-                </div>
-
-                {/* CONFIRM PASSWORD */}
-                <div>
-
-                  <label className="text-sm text-white/60 mb-2 block">
-                    Confirm Password
-                  </label>
-
-                  <div className="flex items-center gap-3 px-4 py-4 rounded-2xl bg-black/20 border border-white/10 focus-within:border-blue-500 transition">
-
-                    <Lock
-                      size={18}
-                      className="text-white/40"
-                    />
-
-                    <input
-                      type="password"
-                      placeholder="Confirm password"
-                      value={
-                        confirmPassword
-                      }
-                      onChange={(e) =>
-                        setConfirmPassword(
-                          e.target.value
-                        )
-                      }
-                      className="bg-transparent w-full outline-none"
-                    />
-
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* BUTTON */}
-              <button
-                onClick={
-                  handlePasswordChange
-                }
-                className="mt-8 bg-gradient-to-r from-blue-600 to-cyan-500 px-8 py-4 rounded-2xl font-semibold hover:scale-105 transition-all shadow-2xl"
-              >
-                Update Password
-              </button>
 
             </div>
           )}

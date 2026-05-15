@@ -4,7 +4,15 @@ import { useParams } from "react-router-dom";
 import { AiOutlineStar, AiFillStar } from "react-icons/ai";
 import { FiSend } from "react-icons/fi";
 
-import { Sparkles, Bot, User, Plus, Paperclip,} from "lucide-react";
+import {
+  Sparkles,
+  Bot,
+  User,
+  Plus,
+  Paperclip,
+} from "lucide-react";
+
+import { motion, AnimatePresence } from "framer-motion";
 
 function AskAi() {
   const { id } = useParams();
@@ -12,7 +20,8 @@ function AskAi() {
   const defaultMessage = {
     type: "ai",
     question: "Welcome",
-    answer: "Hello 👋 I am your AI Study Assistant. Ask me anything.",
+    answer:
+      "Hello 👋 I am your AI Study Assistant. Ask me anything.",
   };
 
   const [messages, setMessages] = useState([]);
@@ -24,7 +33,7 @@ function AskAi() {
   const fileInputRef = useRef();
 
   // =========================
-  // LOAD CHAT / DEFAULT
+  // LOAD CHAT
   // =========================
   useEffect(() => {
     const fetchConversation = async () => {
@@ -57,19 +66,24 @@ function AskAi() {
           return;
         }
 
-        const formatted = data.conversation.messages.map((msg, i, arr) => {
-          if (msg.role === "user") {
-            return { type: "user", text: msg.content };
+        const formatted = data.conversation.messages.map(
+          (msg, i, arr) => {
+            if (msg.role === "user") {
+              return {
+                type: "user",
+                text: msg.content,
+              };
+            }
+
+            const prev = arr[i - 1]?.content || "User";
+
+            return {
+              type: "ai",
+              question: prev,
+              answer: msg.content,
+            };
           }
-
-          const prev = arr[i - 1]?.content || "User";
-
-          return {
-            type: "ai",
-            question: prev,
-            answer: msg.content,
-          };
-        });
+        );
 
         setMessages(formatted);
         setConversationId(data.conversation._id);
@@ -114,7 +128,7 @@ function AskAi() {
   };
 
   // =========================
-  // SEND MESSAGE
+  // SEND QUESTION
   // =========================
   const sendQuestion = async () => {
     const question = inputRef.current?.value.trim();
@@ -123,10 +137,14 @@ function AskAi() {
 
     setMessages((prev) => [
       ...prev,
-      { type: "user", text: question },
+      {
+        type: "user",
+        text: question,
+      },
     ]);
 
     inputRef.current.value = "";
+
     setLoading(true);
 
     try {
@@ -202,160 +220,348 @@ function AskAi() {
   // UI
   // =========================
   return (
-    <div className="w-full px-4 md:px-6 lg:px-8 py-5">
+    <div className="relative h-screen overflow-hidden bg-[#050816] text-white">
 
-      {/* MAIN CONTAINER */}
-      <div className="h-[85vh] flex flex-col rounded-[30px] overflow-hidden border border-white/10 bg-white/5 backdrop-blur-2xl shadow-[0_0_40px_rgba(0,0,0,0.3)]">
+      {/* GRID */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]" />
 
-        {/* TOP BAR */}
-        <div className="flex items-center gap-4 px-6 py-5 border-b border-white/10 bg-black/20 backdrop-blur-xl">
+      {/* GLOW */}
+      <div className="absolute top-[-100px] left-[-100px] w-[350px] h-[350px] bg-cyan-500/20 blur-[120px] rounded-full" />
 
-          <div className="bg-gradient-to-r from-purple-600 to-pink-500 p-3 rounded-2xl shadow-lg text-white">
-            <Sparkles size={22} />
-          </div>
+      <div className="absolute bottom-[-120px] right-[-120px] w-[350px] h-[350px] bg-blue-500/20 blur-[120px] rounded-full" />
 
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold text-white">
-              AI Study Assistant
-            </h1>
+      <div className="relative h-full p-4 md:p-6">
 
-            <p className="text-white/60 text-sm">
-              Ask anything and learn faster 🚀
-            </p>
-          </div>
+        {/* MAIN CONTAINER */}
+        <div className="
+          h-full
+          flex flex-col
+          rounded-[38px]
+          overflow-hidden
+          border border-white/10
+          bg-white/[0.03]
+          backdrop-blur-3xl
+          shadow-[0_0_80px_rgba(0,0,0,0.55)]
+        ">
 
-        </div>
+          {/* TOP BAR */}
+          <div className="
+            flex items-center justify-between
+            px-6 md:px-8 py-5
+            border-b border-white/10
+            bg-black/20 backdrop-blur-2xl
+          ">
 
-        {/* CHAT AREA */}
-        <div
-          id="chatBox"
-          className="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-6"
-        >
+            <div className="flex items-center gap-4">
 
-          {messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`flex ${
-                msg.type === "user"
-                  ? "justify-end"
-                  : "justify-start"
-              }`}
-            >
+              <div className="
+                p-3 rounded-2xl
+                bg-gradient-to-r from-cyan-500 to-blue-600
+                shadow-[0_0_25px_rgba(34,211,238,0.4)]
+              ">
+                <Sparkles size={22} />
+              </div>
 
-              <div
-                className={`relative flex gap-3 max-w-[90%] md:max-w-3xl px-5 py-4 rounded-[28px] shadow-lg ${
-                  msg.type === "user"
-                    ? "bg-gradient-to-r from-purple-600 to-pink-500 text-white"
-                    : "bg-white/10 border border-white/10 backdrop-blur-xl text-white"
-                }`}
-              >
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold">
+                  AI Study Assistant
+                </h1>
 
-                {msg.type === "user" ? (
-                  <User size={20} />
-                ) : (
-                  <Bot size={20} />
-                )}
-
-                <div className="whitespace-pre-wrap leading-relaxed text-sm md:text-base pr-8">
-                  {msg.type === "ai"
-                    ? msg.answer
-                    : msg.text}
-                </div>
-
-                {msg.type === "ai" && (
-                  <button
-                    onClick={() =>
-                      saveNote(
-                        msg.question,
-                        msg.answer,
-                        index
-                      )
-                    }
-                    className="absolute top-3 right-3"
-                  >
-
-                    {savedMessages.includes(index) ? (
-                      <AiFillStar className="text-yellow-400 text-xl" />
-                    ) : (
-                      <AiOutlineStar className="text-gray-300 hover:text-yellow-400 text-xl" />
-                    )}
-
-                  </button>
-                )}
-
+                <p className="text-white/50 text-sm">
+                  Smart conversations powered by AI ⚡
+                </p>
               </div>
 
             </div>
-          ))}
 
-          {/* TYPING INDICATOR */}
-          <div className="h-8 flex items-center gap-3 text-white/70 px-2">
+            {/* STATUS */}
+            <div className="
+              hidden md:flex
+              items-center gap-2
+              bg-white/5 border border-white/10
+              px-4 py-2 rounded-full
+            ">
 
-            {loading ? (
-              <>
-                <div className="w-2 h-2 rounded-full bg-purple-400 animate-bounce"></div>
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
 
-                <div className="w-2 h-2 rounded-full bg-pink-400 animate-bounce delay-100"></div>
+              <span className="text-sm text-white/70">
+                AI Online
+              </span>
 
-                <div className="w-2 h-2 rounded-full bg-white animate-bounce delay-200"></div>
+            </div>
 
-                <span className="text-sm ml-2">
-                  AI is thinking...
-                </span>
-              </>
-            ) : (
-              <div className="opacity-0">.</div>
+          </div>
+
+          {/* CHAT AREA */}
+          <div
+            id="chatBox"
+            className="
+              flex-1
+              overflow-y-auto
+              px-4 md:px-8 py-8
+              space-y-7
+              scrollbar-thin scrollbar-thumb-cyan-500/20
+            "
+          >
+
+            <AnimatePresence>
+
+              {messages.map((msg, index) => (
+                <motion.div
+                  key={index}
+                  initial={{
+                    opacity: 0,
+                    y: 30,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
+                  transition={{
+                    duration: 0.3,
+                  }}
+                  className={`flex ${
+                    msg.type === "user"
+                      ? "justify-end"
+                      : "justify-start"
+                  }`}
+                >
+
+                  <div
+                    className={`
+                      relative
+                      flex gap-4
+                      max-w-[92%] md:max-w-3xl
+                      px-5 py-4
+                      rounded-[28px]
+                      transition-all duration-300
+
+                      ${
+                        msg.type === "user"
+                          ? `
+                            bg-gradient-to-r
+                            from-cyan-500
+                            to-blue-600
+                            shadow-[0_0_30px_rgba(34,211,238,0.25)]
+                          `
+                          : `
+                            bg-white/5
+                            border border-white/10
+                            backdrop-blur-2xl
+                            shadow-[0_0_30px_rgba(255,255,255,0.03)]
+                          `
+                      }
+                    `}
+                  >
+
+                    {/* ICON */}
+                    <div className="
+                      w-9 h-9
+                      rounded-xl
+                      flex items-center justify-center
+                      bg-black/20
+                      border border-white/10
+                      shrink-0
+                    ">
+
+                      {msg.type === "user" ? (
+                        <User size={17} />
+                      ) : (
+                        <Bot size={17} />
+                      )}
+
+                    </div>
+
+                    {/* TEXT */}
+                    <div className="
+                      whitespace-pre-wrap
+                      text-sm md:text-[15px]
+                      leading-relaxed
+                      text-white/90
+                      pr-6
+                    ">
+                      {msg.type === "ai"
+                        ? msg.answer
+                        : msg.text}
+                    </div>
+
+                    {/* SAVE */}
+                    {msg.type === "ai" && (
+                      <button
+                        onClick={() =>
+                          saveNote(
+                            msg.question,
+                            msg.answer,
+                            index
+                          )
+                        }
+                        className="
+                          absolute top-3 right-3
+                          hover:scale-110
+                          transition
+                        "
+                      >
+
+                        {savedMessages.includes(index) ? (
+                          <AiFillStar className="text-yellow-400 text-lg" />
+                        ) : (
+                          <AiOutlineStar className="text-white/40 hover:text-yellow-400 text-lg" />
+                        )}
+
+                      </button>
+                    )}
+
+                  </div>
+
+                </motion.div>
+              ))}
+
+            </AnimatePresence>
+
+            {/* LOADING */}
+            {loading && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex justify-start"
+              >
+
+                <div className="
+                  flex items-center gap-3
+                  px-5 py-4
+                  rounded-[24px]
+                  bg-white/5
+                  border border-white/10
+                  backdrop-blur-xl
+                ">
+
+                  <div className="flex gap-1">
+
+                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" />
+
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-100" />
+
+                    <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-200" />
+
+                  </div>
+
+                  <span className="text-sm text-white/60">
+                    AI is thinking...
+                  </span>
+
+                </div>
+
+              </motion.div>
             )}
 
           </div>
 
-        </div>
+          {/* INPUT AREA */}
+          <div className="
+            border-t border-white/10
+            bg-black/20
+            backdrop-blur-2xl
+            px-4 md:px-8 py-5
+          ">
 
-        {/* INPUT BAR */}
-        <div className="border-t border-white/10 bg-black/20 backdrop-blur-xl px-4 md:px-6 py-4">
+            <div className="
+              flex items-center gap-3
+              bg-white/5
+              border border-white/10
+              rounded-[28px]
+              px-3 py-3
+              focus-within:border-cyan-400/40
+              transition-all
+              shadow-[0_0_30px_rgba(255,255,255,0.03)]
+            ">
 
-          <div className="flex items-center gap-3">
+              {/* UPLOAD */}
+              <button
+                onClick={() =>
+                  fileInputRef.current.click()
+                }
+                className="
+                  w-12 h-12
+                  rounded-2xl
+                  bg-white/5
+                  border border-white/10
+                  flex items-center justify-center
+                  hover:bg-white/10
+                  hover:scale-105
+                  transition
+                "
+              >
 
-            {/* UPLOAD BUTTON */}
-            <button
-              onClick={() => fileInputRef.current.click()}
-              className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/10 hover:bg-white/20 text-white"
-            >
-              <Plus size={20} />
-            </button>
+                <Plus size={20} />
 
-            {/* FILE INPUT */}
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              className="hidden"
-            />
+              </button>
 
-            {/* INPUT */}
-            <div className="flex-1 flex items-center bg-white/10 border border-white/10 rounded-2xl px-4">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                className="hidden"
+              />
 
+              {/* INPUT */}
               <input
                 ref={inputRef}
                 type="text"
                 disabled={loading}
-                placeholder="Ask your study question..."
+                placeholder="Ask anything... AI will help you"
                 onKeyDown={(e) =>
-                  e.key === "Enter" && sendQuestion()
+                  e.key === "Enter" &&
+                  sendQuestion()
                 }
-                className="flex-1 bg-transparent px-4 py-4 text-white placeholder:text-white/40 outline-none"
+                className="
+                  flex-1
+                  bg-transparent
+                  px-3
+                  text-white
+                  placeholder:text-white/40
+                  outline-none
+                  text-sm md:text-base
+                "
               />
 
-            </div>
+              {/* SEND BUTTON */}
+              <button
+                onClick={sendQuestion}
+                disabled={loading}
+                className={`
+                  relative
+                  w-14 h-14
+                  rounded-2xl
+                  flex items-center justify-center
+                  transition-all duration-300
+                  shrink-0
 
-            {/* SEND BUTTON */}
-            <button
-              onClick={sendQuestion}
-              disabled={loading}
-              className="w-12 h-12 flex items-center justify-center rounded-2xl bg-gradient-to-r from-purple-600 to-pink-500 hover:scale-105 transition"
-            >
-              <FiSend size={19} />
-            </button>
+                  ${
+                    loading
+                      ? `
+                        bg-white/10
+                        cursor-not-allowed
+                      `
+                      : `
+                        bg-gradient-to-r
+                        from-cyan-500
+                        to-blue-600
+                        hover:scale-105
+                        active:scale-95
+                        shadow-[0_0_30px_rgba(34,211,238,0.35)]
+                      `
+                  }
+                `}
+              >
+
+                <FiSend
+                  size={19}
+                  className={loading ? "opacity-50" : ""}
+                />
+
+              </button>
+
+            </div>
 
           </div>
 

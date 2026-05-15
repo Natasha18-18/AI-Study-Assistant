@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import {
   BookOpen,
   Trash2,
@@ -9,6 +10,8 @@ import {
   Sparkles,
   CalendarDays,
 } from "lucide-react";
+
+import { motion, AnimatePresence } from "framer-motion";
 
 function Notes() {
 
@@ -23,16 +26,35 @@ function Notes() {
   const [editingNoteId, setEditingNoteId] =
     useState(null);
 
-  // ✅ NEW
   const [selectedNote, setSelectedNote] =
     useState(null);
 
   const token = localStorage.getItem("token");
 
   // =========================
+  // BODY SCROLL LOCK
+  // =========================
+  useEffect(() => {
+
+    if (showModal || selectedNote) {
+      document.body.style.overflow = "hidden";
+    }
+
+    else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+
+  }, [showModal, selectedNote]);
+
+  // =========================
   // FETCH NOTES
   // =========================
   const fetchNotes = async () => {
+
     try {
 
       const res = await fetch(
@@ -48,7 +70,9 @@ function Notes() {
 
       setNotes(data);
 
-    } catch (err) {
+    }
+
+    catch (err) {
       console.log(err);
     }
   };
@@ -62,8 +86,9 @@ function Notes() {
   // =========================
   const handleSaveNote = async () => {
 
-    if (!title || !content)
+    if (!title || !content) {
       return alert("Fill all fields");
+    }
 
     try {
 
@@ -79,9 +104,7 @@ function Notes() {
         method,
 
         headers: {
-          "Content-Type":
-            "application/json",
-
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
 
@@ -101,7 +124,9 @@ function Notes() {
 
       fetchNotes();
 
-    } catch (err) {
+    }
+
+    catch (err) {
       console.log(err);
     }
   };
@@ -111,13 +136,17 @@ function Notes() {
   // =========================
   const editNote = (note) => {
 
-    setTitle(note.title);
+    setSelectedNote(null);
 
-    setContent(note.content);
+    setTitle(note.title || "");
+
+    setContent(note.content || "");
 
     setEditingNoteId(note._id);
 
-    setShowModal(true);
+    setTimeout(() => {
+      setShowModal(true);
+    }, 50);
   };
 
   // =========================
@@ -125,22 +154,34 @@ function Notes() {
   // =========================
   const deleteNote = async (id) => {
 
-    await fetch(
-      `http://localhost:5000/api/notes/${id}`,
-      {
-        method: "DELETE",
+    try {
 
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      await fetch(
+        `http://localhost:5000/api/notes/${id}`,
+        {
+          method: "DELETE",
+
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (selectedNote?._id === id) {
+        setSelectedNote(null);
       }
-    );
 
-    fetchNotes();
+      fetchNotes();
+
+    }
+
+    catch (err) {
+      console.log(err);
+    }
   };
 
   // =========================
-  // FILTER
+  // FILTER NOTES
   // =========================
   const filteredNotes = notes.filter(
     (n) =>
@@ -154,43 +195,123 @@ function Notes() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#070b16] via-[#0f172a] to-black text-white px-4 md:px-8 py-6">
 
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="
+      min-h-screen
+      relative overflow-hidden
+      bg-[#050816]
+      text-white
+      px-4 md:px-8 py-6
+    ">
 
-        {/* ================= HEADER ================= */}
-        <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-2xl p-6 md:p-8 shadow-[0_0_50px_rgba(0,0,0,0.4)]">
+      {/* GRID */}
+      <div className="
+        absolute inset-0
+        bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)]
+        bg-[size:40px_40px]
+      "></div>
 
-          <div className="absolute top-0 right-0 w-72 h-72 bg-purple-600/20 blur-3xl rounded-full"></div>
+      {/* GLOW */}
+      <div className="
+        absolute top-[-100px] left-[-100px]
+        w-[350px] h-[350px]
+        bg-cyan-500/20
+        blur-[120px]
+        rounded-full
+      "></div>
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div className="
+        absolute bottom-[-100px] right-[-100px]
+        w-[350px] h-[350px]
+        bg-blue-500/20
+        blur-[120px]
+        rounded-full
+      "></div>
+
+      <div className="
+        relative z-10
+        max-w-7xl mx-auto
+        space-y-8
+      ">
+
+        {/* HEADER */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="
+            relative overflow-hidden
+            rounded-[36px]
+            border border-cyan-400/10
+            bg-white/[0.04]
+            backdrop-blur-3xl
+            p-6 md:p-8
+            shadow-[0_0_60px_rgba(0,0,0,0.45)]
+          "
+        >
+
+          <div className="
+            absolute top-0 right-0
+            w-80 h-80
+            bg-cyan-500/20
+            blur-[120px]
+            rounded-full
+          "></div>
+
+          <div className="
+            relative z-10
+            flex flex-col md:flex-row
+            md:items-center
+            md:justify-between
+            gap-6
+          ">
 
             <div className="flex items-center gap-5">
 
-              <div className="w-16 h-16 rounded-3xl bg-gradient-to-r from-purple-600 to-pink-500 flex items-center justify-center shadow-2xl">
+              <div className="
+                w-16 h-16
+                rounded-3xl
+                bg-gradient-to-r
+                from-cyan-500
+                to-blue-600
+                flex items-center justify-center
+                shadow-[0_0_35px_rgba(59,130,246,0.35)]
+              ">
+
                 <BookOpen size={30} />
+
               </div>
 
               <div>
 
-                <h1 className="text-3xl md:text-4xl font-bold">
+                <h1 className="
+                  text-4xl md:text-5xl
+                  font-black
+                  bg-gradient-to-r
+                  from-cyan-300
+                  via-blue-400
+                  to-white
+                  text-transparent
+                  bg-clip-text
+                ">
                   My Notes
                 </h1>
 
-                <p className="text-white/60 mt-1">
-                  Organize your thoughts,
-                  AI notes & study
-                  materials ✨
+                <p className="
+                  text-white/55
+                  mt-2
+                ">
+                  Smart AI notes with premium experience ✨
                 </p>
 
               </div>
 
             </div>
 
+            {/* CREATE BUTTON */}
             <button
               onClick={() => {
 
-                setShowModal(true);
+                setSelectedNote(null);
 
                 setEditingNoteId(null);
 
@@ -198,8 +319,21 @@ function Notes() {
 
                 setContent("");
 
+                setShowModal(true);
+
               }}
-              className="group bg-gradient-to-r from-purple-600 to-pink-500 px-6 py-3 rounded-2xl flex items-center justify-center gap-2 hover:scale-105 transition-all duration-300 shadow-xl"
+              className="
+                group
+                bg-gradient-to-r
+                from-cyan-500
+                to-blue-600
+                px-6 py-4
+                rounded-2xl
+                flex items-center justify-center gap-2
+                hover:scale-105
+                transition-all duration-300
+                shadow-[0_0_35px_rgba(59,130,246,0.35)]
+              "
             >
 
               <Plus size={18} />
@@ -212,18 +346,34 @@ function Notes() {
 
           </div>
 
-        </div>
+        </motion.div>
 
-        {/* ================= SEARCH ================= */}
+        {/* SEARCH */}
         <div className="relative">
 
           <Search
-            className="absolute left-5 top-1/2 -translate-y-1/2 text-white/40"
+            className="
+              absolute left-5 top-1/2
+              -translate-y-1/2
+              text-white/40
+            "
             size={20}
           />
 
           <input
-            className="w-full pl-14 pr-5 py-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl text-white outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 transition-all"
+            className="
+              w-full
+              pl-14 pr-5 py-4
+              rounded-2xl
+              bg-white/[0.05]
+              border border-white/10
+              backdrop-blur-2xl
+              text-white
+              outline-none
+              focus:border-cyan-400/40
+              focus:ring-2
+              focus:ring-cyan-400/20
+            "
             placeholder="Search notes..."
             value={search}
             onChange={(e) =>
@@ -233,210 +383,370 @@ function Notes() {
 
         </div>
 
-        {/* ================= NOTES GRID ================= */}
-        {filteredNotes.length > 0 ? (
+        {/* NOTES */}
+        <div className="
+          grid sm:grid-cols-2 xl:grid-cols-3
+          gap-7
+        ">
 
-          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredNotes.map((note, index) => (
 
-            {filteredNotes.map((note) => (
+            <motion.div
+              key={note._id}
+              initial={{
+                opacity: 0,
+                y: 40,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              transition={{
+                delay: index * 0.05,
+              }}
+              onClick={() =>
+                setSelectedNote(note)
+              }
+              className="
+                group relative overflow-hidden
+                rounded-[34px]
+                border border-cyan-400/10
+                bg-white/[0.04]
+                backdrop-blur-3xl
+                p-6
+                hover:-translate-y-2
+                hover:border-cyan-400/30
+                hover:shadow-[0_0_50px_rgba(59,130,246,0.18)]
+                transition-all duration-500
+                cursor-pointer
+              "
+            >
 
-              <div
-                key={note._id}
+              <div className="
+                absolute -top-20 -right-20
+                w-56 h-56
+                bg-cyan-500/20
+                blur-[100px]
+                rounded-full
+              "></div>
 
-                // ✅ CLICK NOTE
-                onClick={() =>
-                  setSelectedNote(note)
-                }
+              <div className="
+                relative z-10
+                flex items-start justify-between
+              ">
 
-                className="group relative overflow-hidden rounded-[30px] border border-white/10 bg-white/5 backdrop-blur-2xl p-6 hover:scale-[1.02] transition-all duration-300 shadow-xl hover:shadow-purple-500/10 cursor-pointer"
-              >
+                <div className="
+                  flex items-start gap-4
+                ">
 
-                {/* Glow */}
-                <div className="absolute top-0 right-0 w-40 h-40 bg-purple-600/10 blur-3xl rounded-full"></div>
+                  <div className="
+                    w-14 h-14
+                    rounded-3xl
+                    bg-gradient-to-br
+                    from-cyan-500
+                    to-blue-600
+                    flex items-center justify-center
+                  ">
 
-                {/* TOP */}
-                <div className="relative z-10 flex items-start justify-between gap-3">
+                    <Sparkles size={20} />
 
-                  <div className="flex items-start gap-3">
+                  </div>
 
-                    <div className="mt-1 w-11 h-11 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-500 flex items-center justify-center">
+                  <div>
 
-                      <Sparkles size={18} />
+                    <h2 className="
+                      text-xl font-bold
+                      line-clamp-1
+                    ">
+                      {note.title}
+                    </h2>
 
-                    </div>
+                    <div className="
+                      flex items-center gap-2
+                      text-white/40
+                      text-xs mt-3
+                    ">
 
-                    <div>
+                      <CalendarDays size={12} />
 
-                      <h2 className="text-lg font-semibold line-clamp-1">
-                        {note.title}
-                      </h2>
-
-                      <div className="flex items-center gap-2 text-white/40 text-xs mt-1">
-
-                        <CalendarDays size={12} />
-
-                        <span>
-                          {new Date(
-                            note.createdAt
-                          ).toLocaleDateString()}
-                        </span>
-
-                      </div>
+                      <span>
+                        {new Date(
+                          note.createdAt
+                        ).toLocaleDateString()}
+                      </span>
 
                     </div>
 
                   </div>
 
-                  {/* ACTIONS */}
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition">
-
-                    {/* EDIT */}
-                    <button
-                      onClick={(e) => {
-
-                        e.stopPropagation();
-
-                        editNote(note);
-
-                      }}
-                      className="w-9 h-9 rounded-xl bg-white/10 hover:bg-yellow-500/20 flex items-center justify-center hover:text-yellow-400 transition"
-                    >
-
-                      <Pencil size={16} />
-
-                    </button>
-
-                    {/* DELETE */}
-                    <button
-                      onClick={(e) => {
-
-                        e.stopPropagation();
-
-                        deleteNote(note._id);
-
-                      }}
-                      className="w-9 h-9 rounded-xl bg-white/10 hover:bg-red-500/20 flex items-center justify-center hover:text-red-400 transition"
-                    >
-
-                      <Trash2 size={16} />
-
-                    </button>
-
-                  </div>
-
                 </div>
 
-                {/* CONTENT */}
-                <div className="relative z-10 mt-5">
+                {/* ACTIONS */}
+                <div className="
+                  flex flex-col gap-2
+                  relative z-20
+                ">
 
-                  <p className="text-white/65 leading-relaxed text-sm line-clamp-6">
-                    {note.content}
-                  </p>
+                  {/* EDIT */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
 
-                </div>
+                      e.preventDefault();
+                      e.stopPropagation();
 
-                {/* BOTTOM */}
-                <div className="relative z-10 mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
+                      editNote(note);
 
-                  <span className="text-xs text-purple-300 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">
-                    {note.type || "manual"}
-                  </span>
+                    }}
+                    className="
+                      w-10 h-10
+                      rounded-2xl
+                      bg-white/5
+                      border border-white/10
+                      flex items-center justify-center
+                      hover:bg-yellow-500/20
+                      hover:text-yellow-400
+                      transition
+                    "
+                  >
 
-                  <span className="text-xs text-white/40">
-                    Note #{note._id.slice(-4)}
-                  </span>
+                    <Pencil size={16} />
+
+                  </button>
+
+                  {/* DELETE */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+
+                      e.preventDefault();
+                      e.stopPropagation();
+
+                      deleteNote(note._id);
+
+                    }}
+                    className="
+                      w-10 h-10
+                      rounded-2xl
+                      bg-white/5
+                      border border-white/10
+                      flex items-center justify-center
+                      hover:bg-red-500/20
+                      hover:text-red-400
+                      transition
+                    "
+                  >
+
+                    <Trash2 size={16} />
+
+                  </button>
 
                 </div>
 
               </div>
 
-            ))}
+              <p className="
+                relative z-10
+                mt-6
+                text-white/65
+                leading-7
+                text-sm
+                line-clamp-5
+              ">
+                {note.content}
+              </p>
 
-          </div>
+            </motion.div>
 
-        ) : (
+          ))}
 
-          <div className="flex flex-col items-center justify-center py-28 text-center">
-
-            <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6">
-
-              <BookOpen
-                size={40}
-                className="text-white/40"
-              />
-
-            </div>
-
-            <h2 className="text-2xl font-bold">
-              No Notes Found
-            </h2>
-
-            <p className="text-white/50 mt-2">
-              Start creating your first
-              smart note 🚀
-            </p>
-
-          </div>
-
-        )}
+        </div>
 
       </div>
 
-      {/* ================= CREATE / EDIT MODAL ================= */}
-      {showModal && (
+      {/* VIEW NOTE MODAL */}
+      <AnimatePresence>
 
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center px-4">
+        {selectedNote && !showModal && (
 
-          <div className="relative w-full max-w-xl rounded-[32px] border border-white/10 bg-[#111827]/90 backdrop-blur-2xl p-7 shadow-[0_0_60px_rgba(0,0,0,0.5)]">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="
+              fixed inset-0 z-50
+              bg-black/70
+              backdrop-blur-md
+              flex items-center justify-center
+              p-4
+            "
+            onClick={() =>
+              setSelectedNote(null)
+            }
+          >
 
-            {/* CLOSE */}
-            <button
-              onClick={() =>
-                setShowModal(false)
+            <motion.div
+              initial={{
+                scale: 0.9,
+                opacity: 0,
+              }}
+              animate={{
+                scale: 1,
+                opacity: 1,
+              }}
+              exit={{
+                scale: 0.9,
+                opacity: 0,
+              }}
+              onClick={(e) =>
+                e.stopPropagation()
               }
-              className="absolute top-5 right-5 w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition"
+              className="
+                relative
+                w-full max-w-3xl
+                rounded-[36px]
+                border border-cyan-400/10
+                bg-[#0b1120]/95
+                backdrop-blur-3xl
+                p-8
+                shadow-[0_0_70px_rgba(0,0,0,0.6)]
+              "
             >
 
-              <X size={18} />
+              <button
+                onClick={() =>
+                  setSelectedNote(null)
+                }
+                className="
+                  absolute top-5 right-5
+                  w-10 h-10
+                  rounded-xl
+                  bg-white/5
+                  hover:bg-white/10
+                  flex items-center justify-center
+                "
+              >
 
-            </button>
+                <X size={18} />
 
-            <div className="flex items-center gap-4 mb-6">
+              </button>
 
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-500 flex items-center justify-center">
+              <h2 className="
+                text-3xl font-bold mb-6
+                break-words
+              ">
+                {selectedNote.title}
+              </h2>
 
-                <BookOpen size={24} />
-
+              <div className="
+                text-white/75
+                leading-8
+                whitespace-pre-wrap
+                max-h-[65vh]
+                overflow-y-auto
+                pr-2
+              ">
+                {selectedNote.content}
               </div>
 
-              <div>
+            </motion.div>
 
-                <h2 className="text-2xl font-bold">
+          </motion.div>
 
-                  {editingNoteId
-                    ? "Edit Note"
-                    : "Create Note"}
+        )}
 
-                </h2>
+      </AnimatePresence>
 
-                <p className="text-white/50 text-sm">
-                  Write and save your
-                  thoughts
-                </p>
+      {/* CREATE / EDIT MODAL */}
+      <AnimatePresence>
 
-              </div>
+        {showModal && (
 
-            </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="
+              fixed inset-0 z-[60]
+              overflow-y-auto
+              bg-black/70
+              backdrop-blur-md
+              flex items-center justify-center
+              p-4
+            "
+          >
 
-            {/* TITLE */}
-            <div className="space-y-2 mb-5">
+            <motion.div
+              initial={{
+                scale: 0.9,
+                opacity: 0,
+              }}
+              animate={{
+                scale: 1,
+                opacity: 1,
+              }}
+              exit={{
+                scale: 0.9,
+                opacity: 0,
+              }}
+              className="
+                relative
+                w-full max-w-2xl
+                my-10
+                rounded-[36px]
+                border border-cyan-400/10
+                bg-[#0b1120]/95
+                backdrop-blur-3xl
+                p-8
+                shadow-[0_0_70px_rgba(0,0,0,0.6)]
+              "
+            >
 
-              <label className="text-sm text-white/60">
-                Note Title
-              </label>
+              {/* CLOSE */}
+              <button
+                onClick={() => {
+
+                  setShowModal(false);
+
+                  setEditingNoteId(null);
+
+                  setTitle("");
+
+                  setContent("");
+
+                }}
+                className="
+                  absolute top-5 right-5
+                  w-10 h-10
+                  rounded-xl
+                  bg-white/5
+                  hover:bg-white/10
+                  flex items-center justify-center
+                "
+              >
+
+                <X size={18} />
+
+              </button>
+
+              <h2 className="
+                text-3xl font-bold mb-8
+              ">
+
+                {editingNoteId
+                  ? "Edit Note"
+                  : "Create Note"}
+
+              </h2>
 
               <input
-                className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition"
+                className="
+                  w-full p-4 mb-5
+                  rounded-2xl
+                  bg-white/5
+                  border border-white/10
+                  outline-none
+                "
                 placeholder="Enter title..."
                 value={title}
                 onChange={(e) =>
@@ -444,17 +754,15 @@ function Notes() {
                 }
               />
 
-            </div>
-
-            {/* CONTENT */}
-            <div className="space-y-2 mb-6">
-
-              <label className="text-sm text-white/60">
-                Note Content
-              </label>
-
               <textarea
-                className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 h-44 resize-none outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition"
+                className="
+                  w-full p-4
+                  rounded-2xl
+                  bg-white/5
+                  border border-white/10
+                  h-52 resize-none
+                  outline-none
+                "
                 placeholder="Write your note..."
                 value={content}
                 onChange={(e) =>
@@ -462,14 +770,17 @@ function Notes() {
                 }
               />
 
-            </div>
-
-            {/* BUTTONS */}
-            <div className="flex gap-3">
-
               <button
                 onClick={handleSaveNote}
-                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 py-3 rounded-2xl font-semibold hover:scale-[1.02] transition-all shadow-xl"
+                className="
+                  w-full mt-6
+                  bg-gradient-to-r
+                  from-cyan-500
+                  to-blue-600
+                  py-4
+                  rounded-2xl
+                  font-semibold
+                "
               >
 
                 {editingNoteId
@@ -478,89 +789,13 @@ function Notes() {
 
               </button>
 
-              <button
-                onClick={() =>
-                  setShowModal(false)
-                }
-                className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
-              >
-                Cancel
-              </button>
+            </motion.div>
 
-            </div>
+          </motion.div>
 
-          </div>
+        )}
 
-        </div>
-
-      )}
-
-      {/* ================= FULL NOTE VIEW ================= */}
-      {selectedNote && (
-
-        <div className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-md flex items-center justify-center px-4">
-
-          <div className="relative w-full max-w-3xl max-h-[85vh] overflow-hidden rounded-[32px] border border-white/10 bg-[#111827]/95 backdrop-blur-2xl shadow-[0_0_60px_rgba(0,0,0,0.5)]">
-
-            {/* CLOSE */}
-            <button
-              onClick={() =>
-                setSelectedNote(null)
-              }
-              className="absolute top-5 right-5 z-20 w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition"
-            >
-
-              <X size={18} />
-
-            </button>
-
-            {/* HEADER */}
-            <div className="p-7 border-b border-white/10">
-
-              <div className="flex items-start gap-4">
-
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-500 flex items-center justify-center shrink-0">
-
-                  <BookOpen size={24} />
-
-                </div>
-
-                <div>
-
-                  <h2 className="text-2xl font-bold">
-                    {selectedNote.title}
-                  </h2>
-
-                  <div className="flex items-center gap-2 text-white/40 text-sm mt-2">
-
-                    <CalendarDays size={14} />
-
-                    {new Date(
-                      selectedNote.createdAt
-                    ).toLocaleDateString()}
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* CONTENT */}
-            <div className="overflow-y-auto max-h-[60vh] p-7">
-
-              <p className="text-white/75 leading-8 whitespace-pre-wrap">
-                {selectedNote.content}
-              </p>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      )}
+      </AnimatePresence>
 
     </div>
   );
