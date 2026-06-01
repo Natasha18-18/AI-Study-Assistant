@@ -9,7 +9,7 @@ const Note = require("../models/note");
 const UserActivity = require("../models/UserActivity");
 
 const authMiddleware =
-  require("../middleware/authMiddleware");
+  require("../middleware/authmiddleware");
 
 const router = express.Router();
 

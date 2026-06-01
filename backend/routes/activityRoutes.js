@@ -12,7 +12,7 @@ const {
 } = require("../controllers/activityController");
 
 const authMiddleware =
-  require("../middleware/authMiddleware");
+  require("../middleware/authmiddleware");
 
 // ======================
 // TRACK ROUTES
