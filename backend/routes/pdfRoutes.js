@@ -5,7 +5,7 @@ const pdf = require("pdf-parse");
 const fs = require("fs");
 const path = require("path");
 
-const Note = require("../models/Note");
+const Note = require("../models/note");
 const UserActivity = require("../models/UserActivity");
 
 const authMiddleware =
