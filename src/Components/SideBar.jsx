@@ -27,7 +27,7 @@ const Sidebar = () => {
 
   const validImage =
     user?.profilePic
-      ? `http://localhost:5000${user.profilePic}`
+      ? `${import.meta.env.VITE_API_URL}${user.profilePic}`
       : "https://i.pravatar.cc/100";
 
   const handleLogout = () => {

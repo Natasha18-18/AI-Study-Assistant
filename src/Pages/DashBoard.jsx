@@ -16,6 +16,8 @@ import axios from "axios";
 
 const Dashboard = () => {
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const navigate = useNavigate();
 
   const [dashboardData, setDashboardData] =
@@ -58,8 +60,8 @@ const Dashboard = () => {
     localStorage.getItem("token");
 
   const validImage = user?.profilePic
-    ? `http://localhost:5000${user.profilePic}`
-    : "https://i.pravatar.cc/100";
+  ? `${API_URL}${user.profilePic}`
+  : "https://i.pravatar.cc/100";
 
   // =========================
   // FETCH DASHBOARD
@@ -71,7 +73,7 @@ const Dashboard = () => {
       setLoading(true);
 
       const res = await axios.get(
-        "http://localhost:5000/api/dashboard",
+  `${API_URL}/api/dashboard`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

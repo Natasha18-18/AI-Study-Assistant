@@ -18,6 +18,9 @@ import {
 } from "lucide-react";
 
 const Settings = () => {
+
+  const API_URL = import.meta.env.VITE_API_URL; 
+
   const storedUser = JSON.parse(
     localStorage.getItem("user") || "{}"
   );
@@ -37,9 +40,10 @@ const Settings = () => {
     useState(null);
 
   const [preview, setPreview] = useState(
-    localStorage.getItem("profilePic") ||
-      "https://i.pravatar.cc/150"
-  );
+  storedUser?.profilePic
+    ? `${API_URL}${storedUser.profilePic}`
+    : "https://i.pravatar.cc/150"
+);
 
   const [currentPassword, setCurrentPassword] =
     useState("");
@@ -96,7 +100,7 @@ const Settings = () => {
       }
 
       const res = await axios.put(
-        "http://localhost:5000/api/user/update",
+        `${API_URL}/api/user/update`,
         formData,
         {
           headers: {
@@ -111,13 +115,15 @@ const Settings = () => {
       };
 
       const imageUrl = updatedUser.profilePic
-        ? `http://localhost:5000${updatedUser.profilePic}`
+        ? `${API_URL}${updatedUser.profilePic}`
         : "https://i.pravatar.cc/150";
 
       localStorage.setItem(
         "user",
         JSON.stringify(updatedUser)
       );
+
+      window.dispatchEvent(new Event("storage"));
 
       localStorage.setItem(
         "profilePic",
@@ -128,7 +134,7 @@ const Settings = () => {
       setName(updatedUser.name);
       setEmail(updatedUser.email);
 
-      alert("Profile updated successfully ✅");
+      window.location.reload();
 
     } catch (err) {
       console.log(err);
@@ -171,7 +177,7 @@ const Settings = () => {
       setLoading(true);
 
       await axios.put(
-        "http://localhost:5000/api/user/change-password",
+        `${API_URL}/api/user/change-password`,
         {
           currentPassword,
           newPassword,
